@@ -22,3 +22,9 @@ foyer:
       rate: 2
       interval: 1s
       token-ttl: 5m
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
