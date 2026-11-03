@@ -1,0 +1,13 @@
+server:
+  port: 8081
+
+foyer:
+  # Shared with the gateway example so tokens issued by either verify in both.
+  secret: change-me-to-a-random-secret-of-32-chars-or-more
+  rooms:
+    concert-2026:
+      rate: 2
+      interval: 1s
+      token-ttl: 5m
+      protect:
+        - /booking/**

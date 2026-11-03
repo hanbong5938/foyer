@@ -1,0 +1,21 @@
+[versions]
+springBoot = "4.0.9"
+springCloud = "2025.1.4"
+
+[libraries]
+# Versions of everything below are managed by the Spring Boot BOM.
+spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
+spring-cloud-bom = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "springCloud" }
+lettuce = { module = "io.lettuce:lettuce-core" }
+nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version = "10.10" }
+gson = { module = "com.google.code.gson:gson" }
+micrometer-core = { module = "io.micrometer:micrometer-core" }
+testcontainers = { module = "org.testcontainers:testcontainers" }
+testcontainers-junit = { module = "org.testcontainers:testcontainers-junit-jupiter" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+assertj = { module = "org.assertj:assertj-core" }
+awaitility = { module = "org.awaitility:awaitility" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }

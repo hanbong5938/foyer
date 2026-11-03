@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: booking
+              uri: http://localhost:8081
+              predicates:
+                - Path=/booking/**
+              filters:
+                - Foyer=concert-2026
+
+foyer:
+  # Same secret as booking-service: the token cookie issued here also verifies there.
+  secret: change-me-to-a-random-secret-of-32-chars-or-more
+  rooms:
+    concert-2026:
+      rate: 2
+      interval: 1s
+      token-ttl: 5m

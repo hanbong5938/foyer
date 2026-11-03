@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>You're in line</title>
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; }
+  main { text-align: center; padding: 2rem; max-width: 28rem; }
+  h1 { font-size: 1.5rem; margin: 0 0 .5rem; }
+  .n { font-size: 3rem; font-weight: 700; margin: 1rem 0 .25rem; font-variant-numeric: tabular-nums; }
+  .muted { opacity: .65; font-size: .9rem; }
+  .bar { height: 6px; background: color-mix(in srgb, currentColor 15%, transparent); border-radius: 3px; overflow: hidden; margin: 1.5rem 0; }
+  .bar > div { height: 100%; width: 0; background: currentColor; transition: width .6s ease; }
+</style>
+</head>
+<body>
+<main>
+  <h1>You're in line</h1>
+  <p class="muted" id="msg">Hold on, we'll move you in automatically.</p>
+  <div class="n" id="pos">&middot;&middot;&middot;</div>
+  <div class="muted" id="ahead">ahead of you</div>
+  <div class="bar"><div id="bar"></div></div>
+  <p class="muted">Keep this tab open. Refreshing won't lose your place.</p>
+</main>
+<script>
+(function () {
+  var room = __ROOM__, base = __BASE__, redirect = __REDIRECT__;
+  var url = base + "/" + encodeURIComponent(room);
+  var pos = document.getElementById("pos"), ahead = document.getElementById("ahead"),
+      bar = document.getElementById("bar"), msg = document.getElementById("msg");
+  var initialAhead = null;
+
+  function go() { location.replace(redirect); }
+
+  function show(s) {
+    if (s.state === "ADMITTED") { msg.textContent = "You're in! Redirecting\u2026"; bar.style.width = "100%"; go(); return; }
+    if (s.state === "NOT_IN_QUEUE") { enter(); return; }
+    pos.textContent = s.position.toLocaleString();
+    ahead.textContent = s.position === 1 ? "person ahead of you" : "people ahead of you";
+    if (initialAhead === null || s.position > initialAhead) initialAhead = s.position;
+    bar.style.width = (initialAhead === 0 ? 100 : Math.round(100 * (1 - s.position / initialAhead))) + "%";
+    setTimeout(poll, Math.max(500, s.retryAfterMs || 2000));
+  }
+
+  function fail(status, after) {
+    msg.textContent = status === 404 ? "This waiting room does not exist." : "Temporarily unavailable, retrying\u2026";
+    if (status !== 404) setTimeout(poll, after);
+  }
+
+  function request(method, path, cb) {
+    var headers = { "Accept": "application/json" };
+    if (method === "POST") headers["Content-Type"] = "application/json";
+    fetch(url + path, { method: method, credentials: "same-origin", headers: headers })
+      .then(function (r) {
+        if (!r.ok) { fail(r.status, 1000 * parseInt(r.headers.get("Retry-After") || "3", 10)); return; }
+        return r.json().then(cb);
+      })
+      .catch(function () { fail(0, 3000); });
+  }
+
+  function enter() { request("POST", "/enter", show); }
+  function poll() { request("GET", "/status", show); }
+
+  enter();
+})();
+</script>
+</body>
+</html>
