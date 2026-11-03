@@ -16,6 +16,8 @@ wait in a fair FIFO line and are let in at a fixed rate. Each admitted visitor g
 - **Bundled wait page.** Browsers without a token are redirected to an HTML page that joins the line, shows the
   position, polls with server-suggested backoff and goes back to the original URL once admitted.
 
+Full documentation: [docs/](docs/Home.md) (Getting Started, Configuration, How It Works, HTTP API, Operations, Release Notes).
+
 ## Modules
 
 | Artifact                                 | Use it for                                                                      |
