@@ -19,3 +19,4 @@ awaitility = { module = "org.awaitility:awaitility" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+maven-publish = { id = "com.vanniktech.maven.publish", version = "0.37.0" }

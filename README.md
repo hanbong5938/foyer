@@ -20,9 +20,9 @@ wait in a fair FIFO line and are let in at a fixed rate. Each admitted visitor g
 
 | Artifact                                 | Use it for                                                                      |
 |------------------------------------------|---------------------------------------------------------------------------------|
-| `dev.foyer:foyer-spring-boot-starter`    | Spring MVC or WebFlux apps: queue endpoints, wait page, `protect` paths, metrics |
-| `dev.foyer:foyer-gateway`                | Spring Cloud Gateway (WebFlux): the `Foyer` route filter, plus everything above  |
-| `dev.foyer:foyer-core`, `foyer-redis`    | Framework-free port (`WaitingRoom`), token codec, Lettuce/Lua implementation     |
+| `io.github.hanbong5938:foyer-spring-boot-starter`    | Spring MVC or WebFlux apps: queue endpoints, wait page, `protect` paths, metrics |
+| `io.github.hanbong5938:foyer-gateway`                | Spring Cloud Gateway (WebFlux): the `Foyer` route filter, plus everything above  |
+| `io.github.hanbong5938:foyer-core`, `foyer-redis`    | Framework-free port (`WaitingRoom`), token codec, Lettuce/Lua implementation     |
 
 ## Quickstart
 
@@ -32,7 +32,7 @@ Every service that issues or checks tokens must share the same `foyer.secret` (a
 
 ```kotlin
 dependencies {
-    implementation("dev.foyer:foyer-gateway:0.1.0-SNAPSHOT")
+    implementation("io.github.hanbong5938:foyer-gateway:0.1.0-alpha.1")
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
 }
 ```
@@ -62,7 +62,7 @@ client path and raw query. Admitted requests still forward using the rewritten b
 
 ```kotlin
 dependencies {
-    implementation("dev.foyer:foyer-spring-boot-starter:0.1.0-SNAPSHOT")
+    implementation("io.github.hanbong5938:foyer-spring-boot-starter:0.1.0-alpha.1")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
 }
 ```
@@ -152,7 +152,8 @@ In fail-open mode, a store failure during leave is ignored rather than granting 
 | `foyer.cookie.path`               | `/`                      | Cookie path.                                                                      |
 | `foyer.cookie.domain`             | —                        | Cookie domain, e.g. to share the token across subdomains.                         |
 | `foyer.poll.min` / `poll.max`     | `1s` / `10s`             | Bounds of the poll interval suggested to waiting clients (`retryAfterMs`).        |
-| `foyer.redis.uri`                 | `redis://localhost:6379` | Used only when the app defines no `StatefulRedisConnection<String,String>` bean.  |
+| `foyer.redis.uri`                 | `redis://localhost:6379` | Standalone/Sentinel URI; used when the app defines no Redis connection bean and `cluster-nodes` is empty. |
+| `foyer.redis.cluster-nodes`       | `[]`                     | Cluster seed URIs (`redis://host:port`); when set, a `RedisClusterClient` is used. Keys are hash-tagged per room. |
 | `foyer.redis.key-prefix`          | `foyer`                  | Prefix of every Redis key Foyer writes.                                           |
 | `foyer.rooms.<id>.rate`           | `10`                     | Admissions per `interval`.                                                        |
 | `foyer.rooms.<id>.interval`       | `1s`                     | Refill interval of the token bucket. Durations are whole milliseconds, at least `1ms`. |
@@ -252,6 +253,12 @@ against a room at 200 admissions/s:
 Cold JVMs show `enter` p95 ≈ 200 ms during the first arrival burst (JIT warm-up); run k6 twice or warm the
 gateways before measuring. The nginx container needs a raised `nofile` limit (set in the compose file) for the
 arrival burst, otherwise it logs `accept4() failed (24)` and requests hang.
+
+## Releasing
+
+`io.github.hanbong5938:*` is published from the `v*` tag workflow to the Sonatype Central Portal (validated, then
+released manually from the portal). Local check: `./gradlew publishToMavenLocal -PfoyerVersion=x.y.z`.
+Status: `0.1.0-alpha.1` is an alpha; the API may change before `0.1.0`.
 
 ## Supported versions
 

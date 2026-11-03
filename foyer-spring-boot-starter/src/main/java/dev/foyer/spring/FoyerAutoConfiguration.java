@@ -12,11 +12,14 @@ import dev.foyer.spring.web.FoyerMvcConfiguration;
 import dev.foyer.spring.web.FoyerWebFluxConfiguration;
 import dev.foyer.spring.web.QueueHandler;
 import dev.foyer.spring.web.WaitPage;
+import io.lettuce.core.AbstractRedisClient;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.cluster.RedisClusterClient;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
+import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -62,10 +65,13 @@ public class FoyerAutoConfiguration {
     @ConditionalOnMissingBean(WaitingRoom.class)
     static class RedisConfiguration {
 
+        /** Cluster client when {@code foyer.redis.cluster-nodes} is set, else a standalone client for {@code foyer.redis.uri}. */
         @Bean(destroyMethod = "shutdown")
-        @ConditionalOnMissingBean
-        public RedisClient foyerRedisClient() {
-            return RedisClient.create();
+        @ConditionalOnMissingBean(AbstractRedisClient.class)
+        public AbstractRedisClient foyerRedisClient(FoyerProperties properties) {
+            List<String> nodes = properties.getRedis().getClusterNodes();
+            if (nodes.isEmpty()) return RedisClient.create();
+            return RedisClusterClient.create(nodes.stream().map(RedisURI::create).toList());
         }
 
         /**
@@ -74,8 +80,13 @@ public class FoyerAutoConfiguration {
          * leaves this holder unused (never connected) when one exists.
          */
         @Bean(destroyMethod = "close")
-        public LazyLettuceConnection foyerRedisConnection(RedisClient client, FoyerProperties properties) {
-            return new LazyLettuceConnection(client, RedisURI.create(properties.getRedis().getUri()));
+        public LazyLettuceConnection foyerRedisConnection(AbstractRedisClient client, FoyerProperties properties) {
+            if (client instanceof RedisClusterClient cluster) return new LazyLettuceConnection(cluster);
+            if (client instanceof RedisClient standalone) {
+                return new LazyLettuceConnection(standalone, RedisURI.create(properties.getRedis().getUri()));
+            }
+            throw new IllegalStateException("unsupported Redis client " + client.getClass().getName()
+                    + "; provide a StatefulRedisConnection<String,String> or WaitingRoom bean instead");
         }
 
         @Bean

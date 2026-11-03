@@ -117,13 +117,17 @@ public class FoyerProperties {
     }
 
     public static class Redis {
-        /** Used only when the application defines no {@code StatefulRedisConnection<String,String>} bean. */
+        /** Standalone/Sentinel URI. Used only when the application defines no Redis connection bean and {@link #clusterNodes} is empty. */
         private String uri = "redis://localhost:6379";
+        /** Cluster seed URIs; when non-empty, a cluster client is used instead of {@link #uri}. */
+        private List<String> clusterNodes = new ArrayList<>();
         /** Prefix of every key Foyer writes. */
         private String keyPrefix = "foyer";
 
         public String getUri() { return uri; }
         public void setUri(String uri) { this.uri = uri; }
+        public List<String> getClusterNodes() { return clusterNodes; }
+        public void setClusterNodes(List<String> clusterNodes) { this.clusterNodes = clusterNodes; }
         public String getKeyPrefix() { return keyPrefix; }
         public void setKeyPrefix(String keyPrefix) { this.keyPrefix = keyPrefix; }
     }
