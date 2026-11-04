@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here. Format: [Keep a Changelog](https://keepachangelog.com/).
 
-## [0.1.0-alpha.1] — unreleased
+## [0.1.0-alpha.1] — 2026-11-04
 
 ### Added
 - `foyer-core`: `WaitingRoom` port, `AdmissionPolicy` token bucket, `HmacTokenCodec` (HS256 JWT), `PollBackoff`.
